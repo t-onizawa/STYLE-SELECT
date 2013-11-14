@@ -3,6 +3,7 @@
 .styled-select-wrap {
 	position: relative;
 	width: 400px;
+	padding-bottom: 10px;
 }
 .styled-select-head {
 	white-space: nowrap;
@@ -47,6 +48,7 @@
 	        box-shadow: 0 1px 2px rgba(0,0,0,.6), 0 -1px 2px rgba(0,0,0,.1);
 	border-radius: 5px;
 	display: none;
+	z-index: 100;
 }
 .styled-select li:first-child,
 .styled-select li:first-child a {

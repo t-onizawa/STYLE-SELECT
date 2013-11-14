@@ -1,91 +1,129 @@
+(function ($) {
 
-$.fn.extend ({
-	styleSelect : function ( options ) {
-		var targetSelect = this,
-		targetOptions = targetSelect.find('option'),
-		optionsLength = targetOptions.length;
+	var StyleSelect = function ($select, options) {
+		this.$select = $select;
+		this.$options = this.$select.find('option');
 
-		var $wrap = $('<div class="styled-select-wrap">'),
-			$head = $('<p class="styled-select-head">'),
-			$ul = $('<ul class="styled-select">'),
-			li = [];
+		this.optionsLength = this.$options.length;
 
-		for ( var i = 0; i < optionsLength; i++ ) {
-			var optionValue = targetOptions[i].value,
-				optionText = targetOptions[i].innerHTML;
-			li.push('<li><a href="javascript:void(0);" value="' + optionValue + '" class="styled-option">' + optionText + '</a></li>');
-		}
-		$ul.html(li);
-		$head.text(targetOptions[0].innerHTML);
-		$wrap.append($head).append($ul);
-		targetSelect.after($wrap);
-		targetSelect.css('display', 'none');
+		this.optionMouseEventType = options.mouseEventType;
+		this.optionAnimationType = options.animationType;
+		this.optionAnimationDuration = options.animationDuration;
+		this.optionChangeSubmit = options.changeSubmit;
 
-		var $createdOption = $('.styled-option');
-		$createdOption.on('click', function () {
-			var createdOptionValue = $(this).attr('value'),
-				createdOptionText = $(this).text();
+		this.init();
+	};
+	StyleSelect.prototype = {
+		init: function () {
+			this.createStyledElement();
+			this.eventTrigger();
+		},
+		createStyledElement: function () {
+			var styledItems = [],
+				optionValue, optionText;
 
-			$head.text(createdOptionText);
-			targetOptions.removeAttr('selected');
-			targetOptions.each(function () {
+			this.$styledContainer = $('<div class="styled-select-wrap">');
+			this.$styledHead = $('<p class="styled-select-head">');
+			this.$styledList = $('<ul class="styled-select">');
+
+			for ( var i = 0; i < this.optionsLength; i++ ) {
+				optionValue = this.$options[i].value;
+				optionText = this.$options[i].innerHTML;
+				styledItems.push('<li><a href="javascript:void(0);" value="' + optionValue + '" class="styled-option">' + optionText + '</a></li>');
+			}
+
+			this.$styledList.html(styledItems);
+			this.$styledHead.text(this.$options[0].innerHTML);
+			this.$styledContainer.append(this.$styledHead).append(this.$styledList);
+			this.$select.after(this.$styledContainer);
+			this.$select.css('display', 'none');
+		},
+		eventTrigger: function () {
+			var self = this;
+
+			this.$createdOptions = this.$styledList.find('.styled-option');
+			this.$createdOptions.on('click', function () {
+				self.changeStyledOption($(this));
+			});
+
+			if ( this.optionMouseEventType == 'click' ) {
+				this.$styledHead.on('click', function () {
+					self.displayStyledOptionClick($(this));
+				});
+			} else {
+				this.$styledContainer.hover(function () {
+					self.displayStyledOptionMouseOver($(this));
+				}, function () {
+					self.displayStyledOptionMouseOut($(this));
+				});
+			}
+		},
+		changeStyledOption: function ($this) {
+			var createdOptionValue = $this.attr('value'),
+				createdOptionText = $this.text();
+
+			this.$styledHead.text(createdOptionText);
+			this.$options.removeAttr('selected');
+			this.$options.each(function () {
+				console.log($(this));
 				if ( $(this).val() == createdOptionValue ) {
 					$(this).attr('selected', 'selected');
 				}
 			});
-			$(this).parent().parent($ul).fadeOut(100);
+			$this.parent().parent().fadeOut(100);
 
-			if ( options.changeSubmit ) {
-				$(this).parents('form').submit();
+			if ( this.optionChangeSubmit ) {
+				$this.parents('form').submit();
 			}
-		});
-
-		if ( options.mouseEventType == 'click' ) {
-			$head.on('click', function () {
-				var createdList = $(this).next($ul);
-				if ( createdList.is(':hidden')) {
-					if ( options.animationType == 'fade' ) {
-						createdList.fadeIn(options.animationDuration);
-					} else {
-						createdList.slideDown(options.animationDuration);
-					}
+		},
+		displayStyledOptionClick: function ($this) {
+			var $styledList = $this.next(this.$styledList);
+			if ( $styledList.is(':hidden')) {
+				if ( this.optionAnimationType == 'fade' ) {
+					$styledList.fadeIn(this.optionAnimationDuration);
 				} else {
-					if ( options.animationType == 'fade' ) {
-						createdList.fadeOut(options.animationDuration);
-					} else {
-						createdList.slideUp(options.animationDuration);
-					}
+					$styledList.slideDown(this.optionAnimationDuration);
 				}
-			});
-		} else {
-			$wrap.hover( function () {
-				var createdList = $(this).find($ul);
-				if ( $ul.is(':animated') ) {
-					return;
-				}
-				if ( options.animationType == 'fade' ) {
-					createdList.fadeIn(options.animationDuration);
+			} else {
+				if ( this.optionAnimationType == 'fade' ) {
+					$styledList.fadeOut(this.optionAnimationDuration);
 				} else {
-					createdList.slideDown(options.animationDuration);
+					$styledList.slideUp(this.optionAnimationDuration);
 				}
-			},
-			function () {
-				
-				var createdList = $(this).find($ul);
-				if ( $ul.is(':animated') ) {
-					return;
-				}
-				if ( options.animationType == 'fade' ) {
-					createdList.fadeOut(options.animationDuration);
-				} else {
-					createdList.slideUp(options.animationDuration);
-				}
-			});
+			}
+		},
+		displayStyledOptionMouseOver: function ($this) {
+			var $styledList = $this.find(this.$styledList);
+			if ( $styledList.is(':animated') ) {
+				return;
+			}
+			if ( this.optionAnimationType == 'fade' ) {
+				$styledList.fadeIn(this.optionAnimationDuration);
+			} else {
+				$styledList.slideDown(this.optionAnimationDuration);
+			}
+		},
+		displayStyledOptionMouseOut: function ($this) {
+			var $styledList = $this.find(this.$styledList);
+			if ( $styledList.is(':animated') ) {
+				return;
+			}
+			if ( this.optionAnimationType == 'fade' ) {
+				$styledList.fadeOut(this.optionAnimationDuration);
+			} else {
+				$styledList.slideUp(this.optionAnimationDuration);
+			}
 		}
+	};
 
-		
-	}
-});
+
+	$.fn.styleSelect = function(options){
+        return this.each(function(){
+            new StyleSelect($(this), options);
+        });
+    };
+})(jQuery);
+
 
 
 
