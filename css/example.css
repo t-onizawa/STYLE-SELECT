@@ -1,0 +1,11 @@
+@charset "UTF-8";
+
+* {
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+.wrapper {
+	max-width: 400px;
+	margin: 100px auto;
+}
