@@ -65,7 +65,6 @@
 			this.$styledHead.text(createdOptionText);
 			this.$options.removeAttr('selected');
 			this.$options.each(function () {
-				console.log($(this));
 				if ( $(this).val() == createdOptionValue ) {
 					$(this).attr('selected', 'selected');
 				}
